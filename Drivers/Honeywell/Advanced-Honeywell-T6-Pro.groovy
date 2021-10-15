@@ -46,7 +46,7 @@ metadata {
 @Field static Map THERMOSTAT_MODE=[0x00:"off",0x01:"heat",0x02:"cool",0x03:"auto",0x04:"emergency heat"]
 @Field static Map SET_THERMOSTAT_MODE=["off":0x00,"heat":0x01,"cool":0x02,"auto":0x03,"emergency heat":0x04]
 @Field static Map THERMOSTAT_FAN_MODE=[0x00:"auto",0x01:"on",0x02:"auto",0x03:"on",0x04:"auto",0x05:"on",0x06:"circulate",0x07:"circulate"]
-@Field static Map SET_THERMOSTAT_FAN_MODE=["auto":0x00,"on":0x01,"circulate":0x06]
+@Field static Map SET_THERMOSTAT_FAN_MODE=["auto":0x00,"on":0x01,"circulate":0x06, " auto":0x00, " on":0x01, " circulate":0x06]
 @Field static Map THERMOSTAT_FAN_STATE=[0x00:"idle", 0x01:"running", 0x02:"running high",0x03:"running medium",0x04:"circulation mode",0x05:"humidity circulation mode",0x06:"right - left circulation mode",0x07:"quiet circulation mode"]
 @Field static List<String> supportedThermostatFanModes=["on","auto","circulate"]
 @Field static List<String> supportedThermostatModes=["auto", "off", "heat", "emergency heat", "cool"]
@@ -442,7 +442,7 @@ void zwaveEvent(hubitat.zwave.commands.sensormultilevelv5.SensorMultilevelReport
         if (logEnable) log.debug "got temp: ${cmd.scaledSensorValue}"
         eventProcess(name: "temperature", value: cmd.scaledSensorValue, unit: cmd.scale == 1 ? "F" : "C")
     } else if (cmd.sensorType.toInteger() == 5) {
-        if (logEnable) log.debug "got temp: ${cmd.scaledSensorValue}"
+        if (logEnable) log.debug "got humidity: ${cmd.scaledSensorValue}"
         eventProcess(name: "humidity", value: Math.round(cmd.scaledSensorValue), unit: cmd.scale == 0 ? "%": "g/m³")
     }
 }
@@ -538,7 +538,7 @@ void zwaveEvent(hubitat.zwave.commands.basicv1.BasicSet cmd) {
 
 private void setSetpoint(setPointType, value) {
     List<hubitat.zwave.Command> cmds=[]
-    cmds.add(zwave.thermostatSetpointV2.thermostatSetpointSet(setpointType: setPointType, scale: getTemperatureScale()=="F" ? 1:0 , precision: 0, scaledValue: value))
+    cmds.add(zwave.thermostatSetpointV2.thermostatSetpointSet(setpointType: setPointType, scale: getTemperatureScale()=="F" ? 1:0 , precision: 0, scaledValue: new BigDecimal(value)))
     cmds.add(zwave.thermostatSetpointV2.thermostatSetpointGet(setpointType: setPointType))
     state.isDigital=true
     sendToDevice(cmds)
